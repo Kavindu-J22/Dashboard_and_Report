@@ -29,29 +29,37 @@ public class EmployeeController {
     // Save employee
     @PostMapping("/save")
     public String saveEmployee(@Valid @ModelAttribute("employee") Employee employee,
-                               BindingResult result,
-                               RedirectAttributes redirectAttributes) {
+            BindingResult result,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            model.addAttribute("employee", employee);
             return "register";
         }
 
-        employeeService.saveEmployee(employee);
-        redirectAttributes.addFlashAttribute("successMessage", "Employee registered successfully!");
-        return "redirect:/employees/list";
+        try {
+            employeeService.saveEmployee(employee);
+            redirectAttributes.addFlashAttribute("successMessage", "Employee registered successfully!");
+            return "redirect:/employees/list";
+        } catch (Exception e) {
+            model.addAttribute("employee", employee);
+            model.addAttribute("errorMessage", "Error saving employee: " + e.getMessage());
+            return "register";
+        }
     }
 
     // List all employees
     @GetMapping("/list")
     public String listEmployees(Model model, @RequestParam(required = false) String keyword) {
         List<Employee> employees;
-        
+
         if (keyword != null && !keyword.trim().isEmpty()) {
             employees = employeeService.searchEmployees(keyword);
             model.addAttribute("keyword", keyword);
         } else {
             employees = employeeService.getAllEmployees();
         }
-        
+
         model.addAttribute("employees", employees);
         return "employee-list";
     }
@@ -77,17 +85,26 @@ public class EmployeeController {
     // Update employee
     @PostMapping("/update/{id}")
     public String updateEmployee(@PathVariable Long id,
-                                 @Valid @ModelAttribute("employee") Employee employee,
-                                 BindingResult result,
-                                 RedirectAttributes redirectAttributes) {
+            @Valid @ModelAttribute("employee") Employee employee,
+            BindingResult result,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             employee.setId(id);
+            model.addAttribute("employee", employee);
             return "employee-edit";
         }
 
-        employeeService.updateEmployee(id, employee);
-        redirectAttributes.addFlashAttribute("successMessage", "Employee updated successfully!");
-        return "redirect:/employees/list";
+        try {
+            employeeService.updateEmployee(id, employee);
+            redirectAttributes.addFlashAttribute("successMessage", "Employee updated successfully!");
+            return "redirect:/employees/list";
+        } catch (Exception e) {
+            employee.setId(id);
+            model.addAttribute("employee", employee);
+            model.addAttribute("errorMessage", "Error updating employee: " + e.getMessage());
+            return "employee-edit";
+        }
     }
 
     // Delete employee
@@ -104,4 +121,3 @@ public class EmployeeController {
         return "redirect:/employees/register";
     }
 }
-

@@ -18,6 +18,11 @@
             <a th:href="@{/employees/list}">View All Employees</a>
         </div>
 
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
         <div class="form-container">
             <form th:action="@{/employees/save}" th:object="${employee}" method="post">
                 
